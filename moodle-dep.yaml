@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moodle
+  labels:
+    app: moodle
+spec:
+  selector:
+    matchLabels:
+      app: moodle
+  template:
+    metadata:
+      labels:
+        app: moodle
+    spec:
+      containers:
+      - image: bitnami/moodle:3.11.0
+        name: moodle   
+        env:
+        - name: MOODLE_DATABASE_TYPE
+          value: "mysqli"
+        - name: MOODLE_DATABASE_HOST
+          value: "mysql-sts-0.mysql-svc"
+        - name: MOODLE_DATABASE_NAME
+          value: "moodle"
+        - name: MOODLE_DATABASE_USER
+          value: "root"
+        #- name: ALLOW_EMPTY_PASSWORD
+        #  value: "yes"
+        - name: MOODLE_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secret-pass
+              key: password
+        - name: MOODLE_USERNAME
+          value: "admin"
+        - name: MOODLE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secret-pass
+              key: password
+        - name: MOODLE_EMAIL
+          value: "keerthishn@cloudthat.com"
+        - name: MOODLE_SITE_NAME
+          value: "CloudThat-Internal-Assessment"
+        - name: MOODLE_SKIP_INSTALL
+          value: "yes"
+        #- name: MOODLE_SKIP_BOOTSTRAP
+        #  value: "yes"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: "/bitnami/moodle"
+          name: moodle-pv
+      volumes:
+      - name: moodle-pv
+        persistentVolumeClaim:
+          claimName: moodle-pv-claim
